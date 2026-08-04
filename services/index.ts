@@ -1,0 +1,14 @@
+export * as playerService from "./player.service";
+export * as staffService from "./staff.service";
+export * as clubService from "./club.service";
+export * as competitionService from "./competition.service";
+export * as fixtureService from "./fixture.service";
+export * as transferService from "./transfer.service";
+export * as trainingService from "./training.service";
+export * as medicalService from "./medical.service";
+export * as analyticsService from "./analytics.service";
+export * as notificationService from "./notification.service";
+export * as financeService from "./finance.service";
+export * as scoutingService from "./scouting.service";
+export * as tacticsService from "./tactics.service";
+export * as matchService from "./match.service";
