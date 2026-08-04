@@ -1,0 +1,133 @@
+import type { LiveMatchState, MatchPreparation, PostMatchReview } from "@/types";
+
+export const liveMatch: LiveMatchState = {
+  id: "match-live-1", competition: "Premier League", venue: "Old Trafford • 74,311", attendance: 74_311,
+  homeTeam: "Manchester United", awayTeam: "Liverpool", homeScore: 2, awayScore: 1, minute: 71, status: "live",
+  homeFormation: "4-2-3-1 Wide", awayFormation: "4-3-3",
+  stats: [
+    { label: "Possession", home: "58%", away: "42%" }, { label: "Shots", home: 12, away: 7 },
+    { label: "Shots on Target", home: 6, away: 3 }, { label: "xG", home: "1.89", away: "0.84" },
+    { label: "Corners", home: 5, away: 2 }, { label: "Fouls", home: 7, away: 9 },
+    { label: "Passes", home: 428, away: 312 }, { label: "Pass Accuracy", home: "87%", away: "82%" },
+  ],
+  events: [
+    { minute: 0, type: "kickoff", team: "home" },
+    { minute: 18, type: "goal", team: "home", player: "Bruno Fernandes", detail: "Assist: Rashford" },
+    { minute: 37, type: "goal", team: "away", player: "Mohamed Salah" },
+    { minute: 45, type: "halftime", team: "home" },
+    { minute: 54, type: "goal", team: "home", player: "Rasmus Højlund", detail: "Assist: Bruno Fernandes" },
+    { minute: 65, type: "chance", team: "away", player: "Diogo Jota", detail: "Shot off target" },
+    { minute: 67, type: "sub", team: "away", player: "Luis Díaz", detail: "On for Diogo Jota" },
+    { minute: 69, type: "sub", team: "home", player: "Mason Mount", detail: "On for Kobbie Mainoo" },
+    { minute: 71, type: "chance", team: "away", player: "Darwin Núñez", detail: "Shot off target" },
+  ],
+  momentum: [10, 15, 20, 25, 18, -5, -20, -35, -10, 5, 20, 30, 35, 25, 15, 5, -10, -15, 10, 20],
+  lastEvent: { minute: 71, type: "chance", team: "home", player: "Bruno Fernandes", detail: "Pass · 2s ago" },
+  homeLineup: [
+    { id: "p-onana", name: "Onana", number: 24, position: "GK", x: 50, y: 92 },
+    { id: "p-shaw", name: "Shaw", number: 23, position: "LB", x: 15, y: 72, rating: 7.0 },
+    { id: "p-yoro", name: "Yoro", number: 15, position: "CB", x: 38, y: 76, rating: 7.4 },
+    { id: "p-deligt", name: "de Ligt", number: 4, position: "CB", x: 62, y: 76, rating: 7.1 },
+    { id: "p-dalot", name: "Dalot", number: 20, position: "RB", x: 85, y: 72, rating: 7.2 },
+    { id: "p-ugarte", name: "Ugarte", number: 25, position: "DM", x: 38, y: 58, rating: 7.5 },
+    { id: "p-mount", name: "Mount", number: 7, position: "CM", x: 62, y: 55, rating: 6.8 },
+    { id: "p-fernandes", name: "Fernandes", number: 8, position: "AM", x: 50, y: 40, rating: 8.2 },
+    { id: "p-rashford", name: "Rashford", number: 10, position: "LW", x: 18, y: 30, rating: 7.9 },
+    { id: "p-diallo", name: "Amad", number: 16, position: "RW", x: 82, y: 30, rating: 7.3 },
+    { id: "p-hojlund", name: "Højlund", number: 9, position: "ST", x: 50, y: 16, rating: 7.6 },
+  ],
+  awayLineup: [],
+};
+
+export const matchPreparation: MatchPreparation = {
+  matchId: "match-prep-1", competition: "Premier League", matchday: 34, kickoff: "16:30", venue: "Old Trafford",
+  homeTeam: "Manchester United", awayTeam: "Tottenham Hotspur",
+  homeForm: ["W", "W", "D", "W", "L"], awayForm: ["W", "D", "L", "D", "W"],
+  opponent: {
+    name: "Tottenham Hotspur", formation: "4-2-3-1", style: "Attacking",
+    strengths: ["Fast transitions", "Wide overloads", "Set-piece threat"],
+    weaknesses: ["Space behind fullbacks", "Press can be bypassed", "Vulnerable to long balls"],
+    form: ["W", "D", "L", "D", "W"],
+  },
+  predictedLineup: [
+    { id: "p-hojlund", name: "Højlund", number: 9, position: "ST", x: 50, y: 15, rating: 82 },
+    { id: "p-rashford", name: "Rashford", number: 10, position: "LW", x: 20, y: 25, rating: 84 },
+    { id: "p-garnacho", name: "Garnacho", number: 17, position: "RW", x: 80, y: 25, rating: 83 },
+    { id: "p-fernandes", name: "Fernandes", number: 8, position: "AM", x: 50, y: 40, rating: 88 },
+    { id: "p-ugarte", name: "Ugarte", number: 25, position: "DM", x: 38, y: 55, rating: 83 },
+    { id: "p-mainoo", name: "Mainoo", number: 37, position: "CM", x: 62, y: 55, rating: 82 },
+    { id: "p-dalot", name: "Dalot", number: 20, position: "RB", x: 85, y: 72, rating: 81 },
+    { id: "p-martinez", name: "Martínez", number: 6, position: "CB", x: 40, y: 76, rating: 85 },
+    { id: "p-deligt", name: "de Ligt", number: 4, position: "CB", x: 60, y: 76, rating: 86 },
+    { id: "p-mazraoui", name: "Mazraoui", number: 3, position: "LB", x: 15, y: 72, rating: 82 },
+    { id: "p-onana", name: "Onana", number: 24, position: "GK", x: 50, y: 91, rating: 83 },
+  ],
+  keyPlayer: { name: "Heung-min Son", position: "LW", overall: 87, dangerRating: 4, goals: 15, assists: 9, xg: 13.2 },
+  focusPlayer: { name: "Diogo Dalot", position: "RB", instruction: "Stay tight, limit overlaps and cross early." },
+  conditions: { weatherLabel: "Clear", tempC: 12, pitch: "Excellent", windKmh: 6, humidityPct: 48 },
+  trainingPlan: [
+    { day: "Today", type: "Tactical", focus: "Attacking Shape" },
+    { day: "-1 Day", type: "Defending", focus: "Pressing & Rest Defence" },
+    { day: "-2 Days", type: "Set Pieces", focus: "Dead Ball Practice" },
+    { day: "-3 Days", type: "Recovery", focus: "Light Intensity" },
+  ],
+  tacticalApproach: {
+    mentality: "Positive",
+    inPossession: ["Play Out of Defence", "Work Ball Into Box", "Overlap Left & Right"],
+    inTransition: ["Counter", "Counter-Press"],
+    outOfPossession: ["High Press", "Prevent Short GK Distribution"],
+  },
+  assistantAdvice: "Tottenham struggle when pressed in their own half. Use a high line and force them wide. Their fullbacks push high, so look to exploit the space in behind.",
+  keyBattle: {
+    home: { name: "Rashford", position: "LW" }, away: { name: "Pedro Porro", position: "RB" },
+    stats: [
+      { label: "Pace", home: 85, away: 78 }, { label: "Dribbling", home: 84, away: 76 },
+      { label: "Crossing", home: 79, away: 80 }, { label: "Defending", home: 41, away: 73 },
+    ],
+  },
+  teamFluidity: "Flexible", likelyRatingStars: 4,
+};
+
+export const postMatchReview: PostMatchReview = {
+  matchId: "pm-1", competition: "Premier League", matchday: 34, result: "Win", importance: "Very Important", pointsGained: 3,
+  homeTeam: "Manchester United", awayTeam: "Tottenham Hotspur", homeFormation: "4-2-3-1 Wide", awayFormation: "4-3-3",
+  homeScore: 2, awayScore: 1,
+  scorers: [
+    { team: "home", player: "Rashford", minute: 27 }, { team: "away", player: "Son", minute: 41 },
+    { team: "home", player: "Bruno Fernandes", minute: 63, penalty: true },
+  ],
+  timeline: [
+    { minute: 0, type: "kickoff", team: "home" },
+    { minute: 11, type: "yellow", team: "home", player: "Dalot" },
+    { minute: 27, type: "goal", team: "home", player: "Rashford", detail: "1 - 0" },
+    { minute: 41, type: "goal", team: "away", player: "Son", detail: "1 - 1" },
+    { minute: 45, type: "halftime", team: "home" },
+    { minute: 63, type: "goal", team: "home", player: "Bruno Fernandes (P)", detail: "2 - 1" },
+    { minute: 78, type: "yellow", team: "away", player: "Kulusevski" },
+    { minute: 93, type: "fulltime", team: "home" },
+  ],
+  momentum: [15, 20, 30, 25, 10, -10, -25, -15, 5, 20, 35, 40, 30, 20, 10, -5, 15, 25, 30, 20],
+  momentumSummary: "We had strong periods in both halves and took our chances.",
+  stats: [
+    { label: "Shots", home: 16, away: 8 }, { label: "Shots On Target", home: 7, away: 3 },
+    { label: "xG", home: "2.12", away: "0.94" }, { label: "Possession", home: "56%", away: "44%" },
+    { label: "Pass Accuracy", home: "87%", away: "81%" }, { label: "Tackles Won", home: 13, away: 10 },
+    { label: "Corners", home: 6, away: 3 }, { label: "Yellow Cards", home: 1, away: 1 }, { label: "Red Cards", home: 0, away: 0 },
+  ],
+  pressingSuccessPct: 72, restDefenceRating: 8.1, buildUpSuccessPct: 64,
+  setPieceRatings: [
+    { label: "Corners", stars: 3.5 }, { label: "Free Kicks (Attack)", stars: 4 },
+    { label: "Free Kicks (Defence)", stars: 3 }, { label: "Penalties", stars: 4.5 },
+  ],
+  coachRating: "A-", coachRatingSummary: "Great result. The team executed the game plan well and showed character.",
+  whatWentWell: ["Exploited spaces behind fullbacks", "Dominated midfield battles", "Clinical finishing"],
+  aiTacticalSuggestions: [
+    "Consider using a slightly deeper line against their quick forwards.",
+    "Kulusevski caused problems when drifting inside. Track him tighter.",
+    "Our right side was very effective. Consider overloading that channel more often.",
+  ],
+  assistantNotes: {
+    author: "Carlos Lalin", role: "Assistant Manager",
+    note: "Great response after conceding. Rashford was unplayable in the first half. We can improve our possession in the final third.",
+  },
+};
