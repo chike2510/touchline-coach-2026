@@ -23,7 +23,7 @@ const filters: { label: string; value: NotificationCategory | "all" }[] = [
 export default function InboxPage() {
   const [filter, setFilter] = useState<NotificationCategory | "all">("all");
   const messages = notificationService.getInboxMessages(filter);
-  const [selectedId, setSelectedId] = useState(messages[0]?.id);
+  const [selectedId, setSelectedId] = useState<string | undefined>(messages[0]?.id);
   const selected = messages.find((m) => m.id === selectedId) ?? messages[0];
 
   return (
