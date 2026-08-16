@@ -5,13 +5,17 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatCard } from "@/components/ui/StatCard";
-import { clubService } from "@/services";
+import { useClubState } from "@/hooks";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { RefreshCcw } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Trophy, Users2 } from "lucide-react";
 
 export default function ClubOverviewPage() {
-  const club = clubService.getClubOverview();
+  const { club, isLoading, error, refresh, mutate } = useClubState();
+  if (isLoading) return <div><Header title="CLUB OVERVIEW" subtitle="Loading club state" showBack /><div className="space-y-4 px-4 py-4"><div className="shimmer h-44 rounded-2xl" /><div className="shimmer h-36 rounded-2xl" /><div className="shimmer h-56 rounded-2xl" /></div></div>;
+  if (error || !club) return <div><Header title="CLUB OVERVIEW" subtitle="Club state unavailable" showBack /><EmptyState icon={<RefreshCcw className="h-7 w-7" />} title="Club overview unavailable" description={error ?? "No club state exists yet."} action={<button onClick={() => void refresh()} className="rounded-xl bg-accent-lime px-4 py-2 text-xs font-bold text-surface-0">Try again</button>} /></div>;
 
   return (
     <div>
@@ -20,7 +24,7 @@ export default function ClubOverviewPage() {
       <div className="px-4 py-4 space-y-4">
         <Card>
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-surface-200 flex items-center justify-center font-bold text-xl text-surface-500">MU</div>
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-200 text-xl font-bold text-surface-500">{club.name.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase()}</div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-surface-950">{club.name}</h2>
               <p className="text-2xs text-surface-600">{club.country} • {club.status}</p>
@@ -30,7 +34,7 @@ export default function ClubOverviewPage() {
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <p className="text-sm font-bold text-surface-300">{club.league}</p>
-              <p className="text-2xs text-surface-600">{club.leaguePosition}rd Position</p>
+              <p className="text-2xs text-surface-600">Position {club.leaguePosition}</p>
             </div>
             <div className="text-center">
               <p className="text-sm font-bold text-surface-300">{(club.seasonTicketHolders / 1000).toFixed(0)}K</p>
@@ -75,6 +79,7 @@ export default function ClubOverviewPage() {
             <span className="text-2xs font-bold text-surface-400">{formatCurrency(club.finances.wageBudgetUsed)} / {formatCurrency(club.finances.wageBudget)}</span>
           </div>
           <ProgressBar value={club.finances.wageBudgetUsed} max={club.finances.wageBudget} size="sm" />
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-surface-200/40 pt-3"><button onClick={() => void mutate({ morale: 2 })} className="rounded-lg border border-surface-400 bg-surface-100 px-3 py-2 text-2xs font-semibold text-surface-700">Record morale boost</button><button onClick={() => void mutate({ balance: 250000 })} className="rounded-lg border border-surface-400 bg-surface-100 px-3 py-2 text-2xs font-semibold text-surface-700">Record revenue</button></div>
         </Card>
 
         <Card>

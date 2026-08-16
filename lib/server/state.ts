@@ -18,15 +18,17 @@ type AppState = {
   tactic: TacticPreset;
   squad: Player[];
   match: LiveMatchState;
+  clubAdjustments: { balance: number; morale: number; board: number };
 };
 
 const globalState = globalThis as typeof globalThis & { __touchlineState?: AppState };
 
 export function getAppState(): AppState {
-  if (!globalState.__touchlineState) { const squad = playerService.getSquad(); const tactic = createTacticDraft(squad); globalState.__touchlineState = { career: null, tactic, squad, match: createLiveMatchState(clubService.getClubOverview(), fixtureService.getNextFixture(), tactic, squad) }; }
+  if (!globalState.__touchlineState) { const squad = playerService.getSquad(); const tactic = createTacticDraft(squad); globalState.__touchlineState = { career: null, tactic, squad, match: createLiveMatchState(clubService.getClubOverview(), fixtureService.getNextFixture(), tactic, squad), clubAdjustments: { balance: 0, morale: 0, board: 0 } }; }
   if (!Array.isArray(globalState.__touchlineState.squad)) globalState.__touchlineState.squad = playerService.getSquad();
   if (!globalState.__touchlineState.tactic || globalState.__touchlineState.tactic.id !== "career-tactic") globalState.__touchlineState.tactic = createTacticDraft(globalState.__touchlineState.squad);
   if (!globalState.__touchlineState.match) globalState.__touchlineState.match = createLiveMatchState(clubService.getClubOverview(), fixtureService.getNextFixture(), globalState.__touchlineState.tactic, globalState.__touchlineState.squad);
+  if (!globalState.__touchlineState.clubAdjustments) globalState.__touchlineState.clubAdjustments = { balance: 0, morale: 0, board: 0 };
   return globalState.__touchlineState;
 }
 
