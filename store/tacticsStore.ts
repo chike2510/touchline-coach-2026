@@ -18,6 +18,12 @@ interface TacticsStore {
   setDragging: (dragging: boolean) => void;
   resetActivePreset: () => void;
   saveActivePreset: () => void;
+  setPrincipleScale: (key: TacticPreset["principles"][number]["key"], scale: number) => void;
+  updateSetting: (key: string, value: string, sub?: string) => void;
+  setMentality: (mentality: string) => void;
+  setTeamFluidity: (fluidity: TacticPreset["teamFluidity"]) => void;
+  setFreedom: (freedom: TacticPreset["freedom"]) => void;
+  updateInstruction: (group: keyof TacticPreset["instructions"], index: number, value: string) => void;
 }
 
 const presets = tacticsService.getTacticPresets();
@@ -63,10 +69,15 @@ export const useTacticsStore = create<TacticsStore>((set, get) => ({
 
   saveActivePreset: () => {
     const { activePresetId, slots } = get();
-    set((state) => ({
-      presets: state.presets.map((p) =>
-        p.id === activePresetId ? { ...p, slots: slots.map((s) => ({ ...s })) } : p
-      ),
-    }));
+    set((state) => ({ presets: state.presets.map((p) => p.id === activePresetId ? { ...p, slots: slots.map((s) => ({ ...s })) } : p) }));
   },
+
+  setPrincipleScale: (key, scale) => set((state) => ({ presets: state.presets.map((p) => p.id !== state.activePresetId ? p : { ...p, principles: p.principles.map((principle) => principle.key === key ? { ...principle, scale, value: ["Low", "Measured", "Balanced", "Assertive", "High", "Maximum"][scale] } : principle) }) })),
+
+  updateSetting: (key, value, sub) => set((state) => ({ presets: state.presets.map((p) => p.id !== state.activePresetId ? p : { ...p, settings: p.settings.map((setting) => setting.key === key ? { ...setting, value, sub: sub ?? value } : setting) }) })),
+
+  setMentality: (mentality) => set((state) => ({ presets: state.presets.map((p) => p.id === state.activePresetId ? { ...p, mentality } : p) })),
+  setTeamFluidity: (teamFluidity) => set((state) => ({ presets: state.presets.map((p) => p.id === state.activePresetId ? { ...p, teamFluidity } : p) })),
+  setFreedom: (freedom) => set((state) => ({ presets: state.presets.map((p) => p.id === state.activePresetId ? { ...p, freedom } : p) })),
+  updateInstruction: (group, index, value) => set((state) => ({ presets: state.presets.map((p) => p.id !== state.activePresetId ? p : { ...p, instructions: { ...p.instructions, [group]: p.instructions[group].map((instruction, instructionIndex) => instructionIndex === index ? value : instruction) } }) })),
 }));

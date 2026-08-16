@@ -1,4 +1,5 @@
-import { clubService } from "@/services";
+import { clubService, tacticsService } from "@/services";
+import type { TacticPreset } from "@/types";
 
 export type CareerProfile = {
   managerName: string;
@@ -12,12 +13,13 @@ export type CareerProfile = {
 
 type AppState = {
   career: CareerProfile | null;
+  tactic: TacticPreset;
 };
 
 const globalState = globalThis as typeof globalThis & { __touchlineState?: AppState };
 
 export function getAppState(): AppState {
-  if (!globalState.__touchlineState) globalState.__touchlineState = { career: null };
+  if (!globalState.__touchlineState) globalState.__touchlineState = { career: null, tactic: tacticsService.getActiveTactic() };
   return globalState.__touchlineState;
 }
 
@@ -29,4 +31,13 @@ export function getClubOverview() {
 export function saveCareer(career: CareerProfile) {
   getAppState().career = career;
   return getAppState();
+}
+
+export function getTacticState() {
+  return getAppState().tactic;
+}
+
+export function saveTacticState(tactic: TacticPreset) {
+  getAppState().tactic = tactic;
+  return getAppState().tactic;
 }

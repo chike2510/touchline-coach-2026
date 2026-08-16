@@ -23,6 +23,7 @@ export default function TacticsPage() {
   const {
     presets, activePresetId, slots, selectedSlotId, setActivePreset,
     selectSlot, moveSlot, setSlotRole, setSlotDuty, resetActivePreset, saveActivePreset,
+    setPrincipleScale, updateSetting, setMentality, setTeamFluidity, setFreedom, updateInstruction,
   } = useTacticsStore();
   const showToast = useAppStore((s) => s.showToast);
 
@@ -30,6 +31,19 @@ export default function TacticsPage() {
   const activePreset = presets.find((p) => p.id === activePresetId) ?? presets[0];
   const selectedSlot = slots.find((s) => s.id === selectedSlotId);
   const selectedPlayer = selectedSlot ? playerService.getPlayerById(selectedSlot.playerId) : undefined;
+  const cycleSetting = (key: string, values: string[]) => {
+    const setting = activePreset.settings.find((item) => item.key === key);
+    if (!setting) return;
+    const next = values[(values.indexOf(setting.value) + 1) % values.length] ?? values[0];
+    updateSetting(key, next, next);
+  };
+  const persistTactic = async () => {
+    saveActivePreset();
+    const latest = useTacticsStore.getState().presets.find((preset) => preset.id === activePresetId);
+    if (!latest) return;
+    const response = await fetch("/api/tactics", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tactic: { ...latest, slots: useTacticsStore.getState().slots } }) });
+    showToast(response.ok ? "Tactic saved" : "Could not save tactic", response.ok ? "success" : "error");
+  };
 
   return (
     <div>
@@ -46,7 +60,7 @@ export default function TacticsPage() {
               <FlaskConical className="w-5 h-5 text-surface-400" />
             </button>
             <button
-              onClick={() => { saveActivePreset(); showToast("Tactic saved", "success"); }}
+              onClick={persistTactic}
               className="p-2 rounded-xl hover:bg-surface-100 transition-colors"
               aria-label="Save tactic"
             >
@@ -103,44 +117,30 @@ export default function TacticsPage() {
           <p className="text-2xs text-surface-600 text-center -mt-2">Drag players to reposition · Tap a player to edit role &amp; duty</p>
         )}
 
-        <div className="flex items-center justify-between px-1">
-          <Badge variant="outline">{activePreset.mentality} Mentality</Badge>
-          <Badge variant="outline">{activePreset.teamFluidity} Team Fluidity</Badge>
-        </div>
+        <div className="grid grid-cols-3 gap-2"><button onClick={() => setMentality(activePreset.mentality === "Balanced" ? "Positive" : activePreset.mentality === "Positive" ? "Attacking" : "Balanced")} className="rounded-xl border border-surface-400 bg-surface-100 px-3 py-2 text-left"><span className="block text-[10px] uppercase tracking-wider text-surface-600">Mentality</span><span className="mt-1 block text-xs font-semibold text-accent-lime">{activePreset.mentality}</span></button><button onClick={() => setTeamFluidity(activePreset.teamFluidity === "Rigid" ? "Balanced" : activePreset.teamFluidity === "Balanced" ? "Fluid" : "Rigid")} className="rounded-xl border border-surface-400 bg-surface-100 px-3 py-2 text-left"><span className="block text-[10px] uppercase tracking-wider text-surface-600">Fluidity</span><span className="mt-1 block text-xs font-semibold text-accent-purple">{activePreset.teamFluidity}</span></button><button onClick={() => setFreedom(activePreset.freedom === "Restricted" ? "Balanced" : activePreset.freedom === "Balanced" ? "Flexible" : "Restricted")} className="rounded-xl border border-surface-400 bg-surface-100 px-3 py-2 text-left"><span className="block text-[10px] uppercase tracking-wider text-surface-600">Freedom</span><span className="mt-1 block text-xs font-semibold text-surface-950">{activePreset.freedom}</span></button></div>
 
         {/* Tactical principles */}
         <Card>
           <h3 className="text-sm font-bold text-surface-300 mb-3">Tactical Principles</h3>
           <div className="space-y-1">
             {activePreset.principles.map((p) => (
-              <PrincipleSlider key={p.key} principle={p} />
+              <PrincipleSlider key={p.key} principle={p} onChange={(scale) => setPrincipleScale(p.key, scale)} />
             ))}
           </div>
         </Card>
 
         {/* Team instructions */}
         <Card>
-          <h3 className="text-sm font-bold text-surface-300 mb-3">Team Instructions</h3>
-          <div className="grid grid-cols-3 gap-3 text-2xs">
-            <div>
-              <p className="font-bold text-surface-500 uppercase tracking-wide mb-1.5">In Possession</p>
-              <ul className="space-y-1 text-surface-400">{activePreset.instructions.inPossession.map((i) => <li key={i}>{i}</li>)}</ul>
-            </div>
-            <div>
-              <p className="font-bold text-surface-500 uppercase tracking-wide mb-1.5">In Transition</p>
-              <ul className="space-y-1 text-surface-400">{activePreset.instructions.inTransition.map((i) => <li key={i}>{i}</li>)}</ul>
-            </div>
-            <div>
-              <p className="font-bold text-surface-500 uppercase tracking-wide mb-1.5">Out of Possession</p>
-              <ul className="space-y-1 text-surface-400">{activePreset.instructions.outOfPossession.map((i) => <li key={i}>{i}</li>)}</ul>
-            </div>
+          <div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-bold text-surface-300">Team Instructions</h3><span className="text-[10px] uppercase tracking-wider text-surface-600">Tap to change</span></div>
+          <div className="grid grid-cols-1 gap-4 text-2xs sm:grid-cols-3">
+            {(["inPossession", "inTransition", "outOfPossession"] as const).map((group) => <div key={group}><p className="mb-1.5 font-bold uppercase tracking-wide text-surface-500">{group === "inPossession" ? "In Possession" : group === "inTransition" ? "In Transition" : "Out of Possession"}</p><div className="space-y-1">{activePreset.instructions[group].map((instruction, index) => { const options = group === "inPossession" ? [instruction, "Play Safer", "Take More Risks"] : group === "inTransition" ? [instruction, "Counter", "Hold Shape"] : [instruction, "Higher Line", "Drop Deeper"]; return <button key={`${group}-${index}`} onClick={() => updateInstruction(group, index, options[(options.indexOf(instruction) + 1) % options.length])} className="block w-full rounded-lg border border-transparent px-2 py-1 text-left text-surface-700 transition hover:border-surface-400 hover:bg-surface-100">{instruction}</button>; })}</div></div>)}
           </div>
         </Card>
 
         {/* Detailed settings */}
         <div className="space-y-2">
           {activePreset.settings.map((setting, i) => (
-            <InstructionRow key={setting.key} setting={setting} index={i} />
+            <InstructionRow key={setting.key} setting={setting} index={i} onClick={() => cycleSetting(setting.key, setting.key === "buildUp" ? ["Patient Build-Up", "Direct Build-Up", "Mixed Build-Up"] : setting.key === "pressing" ? ["Hybrid Press", "High Press", "Mid Block"] : setting.key === "tempo" ? ["Controlled Tempo", "Fast Tempo", "Low Tempo"] : [setting.value, "Balanced", "Aggressive"])} />
           ))}
         </div>
       </div>
