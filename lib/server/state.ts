@@ -1,6 +1,7 @@
-import { clubService, playerService } from "@/services";
+import { clubService, fixtureService, playerService } from "@/services";
 import { createTacticDraft } from "@/lib/tactics/formations";
-import type { Player, TacticPreset } from "@/types";
+import { createLiveMatchState } from "@/lib/match/simulation";
+import type { LiveMatchState, Player, TacticPreset } from "@/types";
 
 export type CareerProfile = {
   managerName: string;
@@ -16,14 +17,16 @@ type AppState = {
   career: CareerProfile | null;
   tactic: TacticPreset;
   squad: Player[];
+  match: LiveMatchState;
 };
 
 const globalState = globalThis as typeof globalThis & { __touchlineState?: AppState };
 
 export function getAppState(): AppState {
-  if (!globalState.__touchlineState) { const squad = playerService.getSquad(); globalState.__touchlineState = { career: null, tactic: createTacticDraft(squad), squad }; }
+  if (!globalState.__touchlineState) { const squad = playerService.getSquad(); const tactic = createTacticDraft(squad); globalState.__touchlineState = { career: null, tactic, squad, match: createLiveMatchState(clubService.getClubOverview(), fixtureService.getNextFixture(), tactic, squad) }; }
   if (!Array.isArray(globalState.__touchlineState.squad)) globalState.__touchlineState.squad = playerService.getSquad();
   if (!globalState.__touchlineState.tactic || globalState.__touchlineState.tactic.id !== "career-tactic") globalState.__touchlineState.tactic = createTacticDraft(globalState.__touchlineState.squad);
+  if (!globalState.__touchlineState.match) globalState.__touchlineState.match = createLiveMatchState(clubService.getClubOverview(), fixtureService.getNextFixture(), globalState.__touchlineState.tactic, globalState.__touchlineState.squad);
   return globalState.__touchlineState;
 }
 
@@ -48,4 +51,13 @@ export function saveTacticState(tactic: TacticPreset) {
 
 export function getSquadState() {
   return getAppState().squad;
+}
+
+export function getMatchState() {
+  return getAppState().match;
+}
+
+export function saveMatchState(match: LiveMatchState) {
+  getAppState().match = match;
+  return match;
 }

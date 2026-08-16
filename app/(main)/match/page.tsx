@@ -7,184 +7,30 @@ import { Button } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import { Timeline } from "@/components/ui/Timeline";
 import { MomentumChart } from "@/components/ui/MomentumChart";
-import { HeatMapPlaceholder } from "@/components/ui/HeatMapPlaceholder";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { LiveTacticalMap } from "@/features/match/LiveTacticalMap";
 import { MatchStatRow } from "@/features/match/MatchStatRow";
 import { useMatchStore } from "@/store";
-import { motion } from "framer-motion";
-import { BarChart3, Pause, Play } from "lucide-react";
+import { useSquad } from "@/hooks";
+import { Activity, Pause, Play, RefreshCcw, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-function ScoreHeader() {
-  const { match } = useMatchStore();
-  return (
-    <div className="px-4 py-3 border-b border-surface-200/30">
-      <div className="flex items-center justify-center gap-1 text-2xs text-surface-600 mb-2">
-        <span>{match.competition}</span><span>•</span><span>{match.venue}</span>
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="flex-1 text-center">
-          <div className="w-12 h-12 rounded-xl bg-surface-200 mx-auto mb-1 flex items-center justify-center text-sm font-bold">MUN</div>
-          <span className="text-2xs font-semibold text-surface-400">{match.homeTeam}</span>
-        </div>
-        <div className="text-center px-3">
-          <div className="text-2xl font-bold text-surface-50">{match.homeScore} - {match.awayScore}</div>
-          <span className="text-2xs font-bold text-pitch-400 tabular-nums">{match.status === "live" ? `${match.minute}:00` : match.status}</span>
-        </div>
-        <div className="flex-1 text-center">
-          <div className="w-12 h-12 rounded-xl bg-surface-200 mx-auto mb-1 flex items-center justify-center text-sm font-bold">LIV</div>
-          <span className="text-2xs font-semibold text-surface-400">{match.awayTeam}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
+function teamCode(name: string) { return name.split(/\s+/).map((word) => word[0]).join("").slice(0, 3).toUpperCase() || "—"; }
 
-function LiveTab() {
-  const { match, isTicking, startTicking, stopTicking } = useMatchStore();
+function ScoreHeader() { const match = useMatchStore((state) => state.match); if (!match) return <div className="h-36 shimmer" />; return <div className="border-b border-surface-200/30 px-4 py-4"><div className="mb-3 flex justify-center gap-1 text-2xs text-surface-600"><span>{match.competition}</span><span>•</span><span>{match.venue}</span></div><div className="flex items-center justify-between"><div className="flex-1 text-center"><div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-200 text-sm font-bold text-surface-800">{teamCode(match.homeTeam)}</div><span className="text-2xs font-semibold text-surface-400">{match.homeTeam}</span></div><div className="px-3 text-center"><div className="text-2xl font-bold text-surface-950">{match.homeScore} - {match.awayScore}</div><span className="text-2xs font-bold tabular-nums text-accent-lime">{match.status === "live" ? `${match.minute}:00` : match.status}</span></div><div className="flex-1 text-center"><div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-200 text-sm font-bold text-surface-800">{teamCode(match.awayTeam)}</div><span className="text-2xs font-semibold text-surface-400">{match.awayTeam}</span></div></div></div>; }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Badge variant="lime">Attacking: {match.lastEvent?.team === "home" ? match.homeTeam : match.awayTeam}</Badge>
-        <button
-          onClick={() => (isTicking ? stopTicking() : startTicking())}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-200 text-2xs font-bold text-surface-300"
-        >
-          {isTicking ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          {isTicking ? "Pause" : "Simulate"}
-        </button>
-      </div>
+function LiveControls() { const { match, isTicking, startTicking, stopTicking, advanceMinute } = useMatchStore(); if (!match) return null; return <div className="flex items-center justify-between"><Badge variant={match.status === "live" ? "lime" : "neutral"}>{match.status === "live" ? `Live · ${match.minute}'` : match.status === "finished" ? "Full-time" : "Ready to start"}</Badge><div className="flex gap-2"><button onClick={() => void advanceMinute()} className="rounded-lg bg-surface-200 px-3 py-1.5 text-2xs font-bold text-surface-300">+1 min</button><button onClick={() => isTicking ? stopTicking() : startTicking()} className="flex items-center gap-1.5 rounded-lg bg-accent-lime px-3 py-1.5 text-2xs font-bold text-surface-0">{isTicking ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}{isTicking ? "Pause" : "Simulate"}</button></div></div>; }
 
-      <LiveTacticalMap lineup={match.homeLineup} highlightedId={match.lastEvent?.team === "home" ? "p-fernandes" : undefined} />
+function LiveTab() { const match = useMatchStore((state) => state.match); if (!match) return null; return <div className="space-y-4"><LiveControls /><LiveTacticalMap lineup={match.homeLineup} highlightedId={match.lastEvent?.team === "home" ? match.lastEvent.player : undefined} /><Card padding="sm"><div className="flex items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-200"><Activity className="h-4 w-4 text-accent-lime" /></div><div><p className="text-2xs uppercase tracking-wide text-surface-600">{match.lastEvent ? `${match.lastEvent.minute}' · ${match.lastEvent.type}` : "Match state"}</p><p className="text-sm font-bold text-surface-300">{match.lastEvent?.player ?? "No event yet"}</p><p className="text-2xs text-surface-600">{match.lastEvent?.detail ?? "Advance the clock to generate live match events."}</p></div></div></Card><MomentumChart values={match.momentum} homeLabel={teamCode(match.homeTeam)} awayLabel={teamCode(match.awayTeam)} /><Card><h3 className="mb-3 text-sm font-bold text-surface-300">Live snapshot</h3><div className="grid grid-cols-3 gap-3 text-center"><div><p className="text-2xs text-surface-600">Possession</p><p className="mt-1 text-xs font-bold text-accent-lime">{match.possession}%</p></div><div><p className="text-2xs text-surface-600">xG</p><p className="mt-1 text-xs font-bold text-surface-300">{match.xg.home.toFixed(2)} - {match.xg.away.toFixed(2)}</p></div><div><p className="text-2xs text-surface-600">Changes</p><p className="mt-1 text-xs font-bold text-accent-purple">{match.substitutions.length}</p></div></div></Card></div>; }
 
-      {match.lastEvent && (
-        <Card padding="sm" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-surface-200 shrink-0" />
-          <div>
-            <p className="text-2xs text-surface-600 uppercase tracking-wide">Last Event</p>
-            <p className="text-sm font-bold text-surface-300">{match.lastEvent.player}</p>
-            <p className="text-2xs text-surface-600">{match.lastEvent.detail ?? match.lastEvent.type}</p>
-          </div>
-        </Card>
-      )}
+function TimelineTab() { const match = useMatchStore((state) => state.match); return match ? <Card><Timeline events={match.events} /></Card> : null; }
+function StatsTab() { const match = useMatchStore((state) => state.match); return match ? <Card>{match.stats.map((stat) => <MatchStatRow key={stat.label} stat={stat} />)}</Card> : null; }
 
-      <MomentumChart values={match.momentum} homeLabel="MUN" awayLabel="LIV" />
+function TacticsTab() { const match = useMatchStore((state) => state.match); const applyTacticalChange = useMatchStore((state) => state.applyTacticalChange); const [error, setError] = useState<string | null>(null); if (!match) return null; const change = async (patch: Parameters<typeof applyTacticalChange>[0]) => { try { setError(null); await applyTacticalChange(patch); } catch (requestError) { setError(requestError instanceof Error ? requestError.message : "Tactical change failed."); } }; const options = { mentality: ["Very Defensive", "Defensive", "Balanced", "Positive", "Attacking", "Very Attacking"] as const, tempo: ["Slow", "Normal", "Fast", "Very Fast"] as const, pressing: ["Low Block", "Mid Block", "High Press", "Counter-Press"] as const, width: ["Narrow", "Balanced", "Wide"] as const, attackingFocus: ["Left", "Center", "Right", "Mixed"] as const }; return <div className="space-y-4"><Card><div className="mb-3 flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 text-accent-lime" /><h3 className="text-sm font-bold text-surface-300">Live tactical adjustments</h3></div><p className="mb-4 text-xs text-surface-600">Changes apply to the next simulation tick and remain attached to this match.</p>{error && <p className="mb-3 text-xs text-accent-red">{error}</p>}<div className="space-y-3">{(Object.keys(options) as Array<keyof typeof options>).map((key) => <label key={key} className="flex items-center justify-between gap-3 rounded-xl border border-surface-300 bg-surface-100 px-3 py-2"><span className="text-xs font-semibold capitalize text-surface-700">{key === "attackingFocus" ? "Attacking focus" : key}</span><select value={match.tacticalState[key]} onChange={(event) => void change({ [key]: event.target.value } as never)} className="rounded-lg border border-surface-400 bg-surface-0 px-2 py-1 text-xs text-surface-900">{options[key].map((option) => <option key={option}>{option}</option>)}</select></label>)}</div></Card><Card><h3 className="mb-3 text-sm font-bold text-surface-300">Current shape</h3><div className="grid grid-cols-2 gap-3 text-xs"><div><span className="text-surface-600">Formation</span><p className="mt-1 font-bold text-surface-300">{match.tacticalState.formation}</p></div><div><span className="text-surface-600">Home lineup</span><p className="mt-1 font-bold text-surface-300">{match.homeLineup.length} assigned</p></div></div></Card></div>; }
 
-      <Card>
-        <h3 className="text-sm font-bold text-surface-300 mb-2">Tactical Control</h3>
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <div><p className="text-2xs text-surface-600">Formation</p><p className="text-xs font-bold text-surface-300 mt-1">{match.homeFormation}</p></div>
-          <div><p className="text-2xs text-surface-600">Mentality</p><p className="text-xs font-bold text-accent-red mt-1">Attacking</p></div>
-          <div><p className="text-2xs text-surface-600">Instructions</p><p className="text-xs font-bold text-surface-300 mt-1">7 Active</p></div>
-        </div>
-      </Card>
-    </div>
-  );
-}
+function RatingsTab() { const match = useMatchStore((state) => state.match); if (!match) return null; const rated = [...match.homeLineup].filter((player) => player.rating).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)); return <Card><div className="space-y-2">{rated.length ? rated.map((player) => <div key={player.id} className="flex items-center justify-between border-b border-surface-200/30 py-2 last:border-0"><div className="flex items-center gap-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-200 text-2xs font-bold text-surface-500">{player.number}</div><span className="text-sm font-semibold text-surface-300">{player.name}</span></div><span className="rounded bg-surface-200 px-2 py-0.5 text-sm font-bold text-accent-lime">{player.rating?.toFixed(1)}</span></div>) : <p className="text-sm text-surface-600">Ratings will appear as the simulation progresses.</p>}</div></Card>; }
 
-function TimelineTab() {
-  const { match } = useMatchStore();
-  return (
-    <Card>
-      <Timeline events={match.events} />
-    </Card>
-  );
-}
+function SubstitutionCard() { const match = useMatchStore((state) => state.match); const makeSubstitution = useMatchStore((state) => state.makeSubstitution); const { players } = useSquad(); const [off, setOff] = useState(""); const [on, setOn] = useState(""); const activeIds = useMemo(() => new Set(match?.homeLineup.map((player) => player.id) ?? []), [match]); if (!match) return null; const bench = players.filter((player) => !activeIds.has(player.id)); return <Card><h3 className="mb-3 text-sm font-bold text-surface-300">Make a substitution</h3><div className="grid grid-cols-2 gap-2"><select value={off} onChange={(event) => setOff(event.target.value)} className="rounded-lg border border-surface-400 bg-surface-0 px-2 py-2 text-xs text-surface-900"><option value="">Player off</option>{match.homeLineup.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}</select><select value={on} onChange={(event) => setOn(event.target.value)} className="rounded-lg border border-surface-400 bg-surface-0 px-2 py-2 text-xs text-surface-900"><option value="">Player on</option>{bench.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}</select></div><Button className="mt-3 w-full" disabled={!off || !on} onClick={() => void makeSubstitution(off, on)}>Confirm change</Button></Card>; }
 
-function StatsTab() {
-  const { match } = useMatchStore();
-  return (
-    <Card>
-      {match.stats.map((s) => <MatchStatRow key={s.label} stat={s} />)}
-    </Card>
-  );
-}
-
-function TacticsTab() {
-  const { match } = useMatchStore();
-  return (
-    <div className="space-y-4">
-      <Card>
-        <h3 className="text-sm font-bold text-surface-300 mb-3">Our Shape</h3>
-        <LiveTacticalMap lineup={match.homeLineup} />
-      </Card>
-      <Card>
-        <h4 className="text-2xs font-bold text-surface-500 uppercase tracking-wide mb-2">Formation</h4>
-        <p className="text-sm font-bold text-surface-300">{match.homeFormation}</p>
-      </Card>
-    </div>
-  );
-}
-
-function RatingsTab() {
-  const { match } = useMatchStore();
-  const rated = [...match.homeLineup].filter((p) => p.rating).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-  return (
-    <Card>
-      <div className="space-y-2">
-        {rated.map((p) => (
-          <div key={p.id} className="flex items-center justify-between py-2 border-b border-surface-200/30 last:border-0">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-surface-200 flex items-center justify-center text-2xs font-bold text-surface-500">{p.number}</div>
-              <span className="text-sm font-semibold text-surface-300">{p.name}</span>
-            </div>
-            <span className={`text-sm font-bold px-2 py-0.5 rounded ${(p.rating ?? 0) >= 7.5 ? "bg-pitch-500/15 text-pitch-400" : "bg-surface-200 text-surface-400"}`}>
-              {p.rating?.toFixed(1)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function AnalyticsTab() {
-  return (
-    <div className="space-y-4">
-      <Card>
-        <h3 className="text-sm font-bold text-surface-300 mb-2">Attacking Heat Map</h3>
-        <HeatMapPlaceholder />
-      </Card>
-      <Card>
-        <div className="flex items-center gap-2 text-surface-500">
-          <BarChart3 className="w-4 h-4" />
-          <p className="text-xs">Deeper xG and pass-network breakdowns available post-match.</p>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-export default function MatchPage() {
-  const router = useRouter();
-  const { reset } = useMatchStore();
-
-  useEffect(() => {
-    return () => useMatchStore.getState().stopTicking();
-  }, []);
-
-  const tabs = [
-    { id: "live", label: "Live", content: <LiveTab /> },
-    { id: "timeline", label: "Timeline", content: <TimelineTab /> },
-    { id: "stats", label: "Stats", content: <StatsTab /> },
-    { id: "tactics", label: "Tactics", content: <TacticsTab /> },
-    { id: "ratings", label: "Ratings", content: <RatingsTab /> },
-    { id: "analytics", label: "Analytics", content: <AnalyticsTab /> },
-  ];
-
-  return (
-    <div>
-      <Header title="MATCH CENTRE" showBack />
-      <ScoreHeader />
-      <div className="px-4 pt-3 pb-4">
-        <Tabs tabs={tabs} defaultTab="live" />
-      </div>
-      <div className="px-4 pb-4 grid grid-cols-2 gap-3">
-        <Button variant="secondary" onClick={() => router.push("/match/prep")}>Match Prep</Button>
-        <Button variant="secondary" onClick={() => { reset(); router.push("/match/review"); }}>Post-Match</Button>
-      </div>
-    </div>
-  );
-}
+export default function MatchPage() { const router = useRouter(); const { match, isLoading, error, hydrate, reset } = useMatchStore(); useEffect(() => { void hydrate(); return () => useMatchStore.getState().stopTicking(); }, [hydrate]); if (isLoading) return <div><Header title="MATCH CENTRE" showBack /><div className="p-4"><div className="shimmer h-36 rounded-2xl" /><div className="mt-4 shimmer h-96 rounded-2xl" /></div></div>; if (error || !match) return <div><Header title="MATCH CENTRE" showBack /><EmptyState icon={<RefreshCcw className="h-7 w-7" />} title="Match unavailable" description={error ?? "No live fixture is available yet."} action={<button onClick={() => void hydrate()} className="rounded-xl bg-accent-lime px-4 py-2 text-xs font-bold text-surface-0">Try again</button>} /></div>; const tabs = [{ id: "live", label: "Live", content: <LiveTab /> }, { id: "timeline", label: "Timeline", content: <TimelineTab /> }, { id: "stats", label: "Stats", content: <StatsTab /> }, { id: "tactics", label: "Tactics", content: <TacticsTab /> }, { id: "ratings", label: "Ratings", content: <RatingsTab /> }, { id: "changes", label: "Changes", content: <SubstitutionCard /> }]; return <div><Header title="MATCH CENTRE" showBack /><ScoreHeader /><div className="px-4 pb-4 pt-3"><Tabs tabs={tabs} defaultTab="live" /></div><div className="grid grid-cols-2 gap-3 px-4 pb-4"><Button variant="secondary" onClick={() => router.push("/match/prep")}>Match Prep</Button><Button variant="secondary" onClick={() => { void reset(); router.push("/match/review"); }}>Post-Match</Button></div></div>; }

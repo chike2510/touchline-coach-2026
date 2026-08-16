@@ -1,4 +1,23 @@
 export type MatchStatus = "upcoming" | "live" | "finished";
+export type MatchMentality = "Very Defensive" | "Defensive" | "Balanced" | "Positive" | "Attacking" | "Very Attacking";
+export type MatchTempo = "Slow" | "Normal" | "Fast" | "Very Fast";
+
+export interface MatchTacticalState {
+  formation: string;
+  mentality: MatchMentality;
+  tempo: MatchTempo;
+  pressing: "Low Block" | "Mid Block" | "High Press" | "Counter-Press";
+  width: "Narrow" | "Balanced" | "Wide";
+  attackingFocus: "Left" | "Center" | "Right" | "Mixed";
+}
+
+export interface MatchSubstitution {
+  minute: number;
+  playerOffId: string;
+  playerOnId: string;
+  playerOffName: string;
+  playerOnName: string;
+}
 
 export interface MatchEvent {
   minute: number;
@@ -45,6 +64,10 @@ export interface LiveMatchState {
   lastEvent?: MatchEvent;
   homeLineup: MatchLineupPlayer[];
   awayLineup: MatchLineupPlayer[];
+  tacticalState: MatchTacticalState;
+  substitutions: MatchSubstitution[];
+  possession: number;
+  xg: { home: number; away: number };
 }
 
 export interface MatchPrepOpponent {

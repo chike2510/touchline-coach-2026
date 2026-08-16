@@ -37,6 +37,8 @@ export const liveMatch: LiveMatchState = {
     { id: "p-hojlund", name: "Højlund", number: 9, position: "ST", x: 50, y: 16, rating: 7.6 },
   ],
   awayLineup: [],
+  tacticalState: { formation: "4-2-3-1 Wide", mentality: "Attacking", tempo: "Fast", pressing: "High Press", width: "Wide", attackingFocus: "Mixed" },
+  substitutions: [], possession: 58, xg: { home: 1.89, away: 0.84 },
 };
 
 export const matchPreparation: MatchPreparation = {
