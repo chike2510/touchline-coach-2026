@@ -15,6 +15,7 @@ export * from "./calendar";
 export * from "./notification";
 export * from "./finance";
 export * from "./scouting";
+export * from "./tournament";
 
 export interface AppState {
   currentScreen: string;
