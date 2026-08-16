@@ -33,8 +33,8 @@ export function Card({
       whileTap={interactive ? { scale: 0.98 } : undefined}
       onClick={onClick}
       className={cn(
-        "relative rounded-2xl bg-surface-100 border border-surface-200/50 overflow-hidden",
-        glow && "shadow-glow border-pitch-500/20",
+        "relative overflow-hidden rounded-2xl border border-surface-400/80 bg-gradient-to-br from-surface-200/90 to-surface-100/95",
+        glow && "shadow-glow border-pitch-500/60",
         interactive && "cursor-pointer active:opacity-90",
         paddings[padding],
         className

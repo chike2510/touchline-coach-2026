@@ -40,10 +40,11 @@ export const spacing = {
 } as const;
 
 export const layout = {
-  maxWidth: "430px",
-  tabletMaxWidth: "768px",
+  mobileMaxWidth: "860px",
+  contentMaxWidth: "1540px",
+  desktopRailWidth: "224px",
   safeAreaTop: "env(safe-area-inset-top)",
   safeAreaBottom: "env(safe-area-inset-bottom)",
-  bottomNavHeight: "4rem",
-  headerHeight: "3.5rem",
+  mobileNavHeight: "5rem",
+  topBarHeight: "4.5rem",
 } as const;

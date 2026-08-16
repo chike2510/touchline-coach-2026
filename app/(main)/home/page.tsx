@@ -1,13 +1,15 @@
 "use client";
 
 import { Header } from "@/components/navigation/Header";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { motion } from "framer-motion";
-import { Calendar, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { clubService, competitionService, fixtureService, notificationService, trainingService } from "@/services";
+import { Activity, CalendarDays, ChevronRight, Clock3, MessageCircle, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+
+const initials = (value: string) => value.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase();
 
 export default function HomePage() {
   const router = useRouter();
@@ -16,144 +18,17 @@ export default function HomePage() {
   const table = competitionService.getLeagueTable().slice(0, 5);
   const unread = notificationService.getUnreadCount();
   const training = trainingService.getTrainingOverview();
+  const news = club.news.slice(0, 2);
 
-  return (
-    <div>
-      <Header
-        title="TOUCHLINE 26"
-        subtitle="Good Morning, AURACLE"
-        showNotifications
-        notificationCount={unread}
-        rightAction={
-          <div className="w-8 h-8 rounded-full bg-surface-200 flex items-center justify-center text-xs font-bold text-pitch-400">
-            AU
-          </div>
-        }
-      />
+  return <div><Header title="HOME" subtitle={`${club.name} · ${club.league}`} showSearch showNotifications notificationCount={unread} rightAction={<button className="rounded-xl border border-surface-400 p-2 text-surface-700 hover:text-surface-950" aria-label="Open messages"><MessageCircle className="h-4 w-4" /></button>} /><div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-4 px-4 py-5 sm:px-6 lg:grid-cols-12 lg:gap-5 lg:px-8">
+    {nextFixture && <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-8"><Card className="relative min-h-[260px] overflow-hidden p-5 sm:p-7"><div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(182,109,255,.18),transparent_35%),linear-gradient(120deg,rgba(183,245,42,.08),transparent_50%)]" /><div className="relative flex h-full flex-col justify-between"><div><p className="eyebrow">Next match</p><div className="mt-8 flex items-center justify-between gap-3"><div><div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-surface-400 bg-surface-100 text-sm font-bold text-accent-lime">{initials(club.name)}</div><p className="mt-2 text-sm font-semibold text-surface-950">{club.name}</p></div><div className="text-center"><p className="text-xs text-surface-600">{nextFixture.date} · {nextFixture.time}</p><p className="mt-2 text-2xl font-bold text-surface-950">VS</p><p className="mt-1 text-xs text-surface-600">{nextFixture.isHome ? "Home fixture" : "Away fixture"}</p></div><div className="text-right"><div className="ml-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-surface-400 bg-surface-100 text-sm font-bold text-surface-800">{initials(nextFixture.opponent)}</div><p className="mt-2 text-sm font-semibold text-surface-950">{nextFixture.opponent}</p></div></div></div><div className="mt-8 flex flex-wrap items-center gap-3"><Button onClick={() => router.push("/match/prep")}><Sparkles className="mr-2 h-4 w-4" />Prepare match</Button><span className="inline-flex items-center gap-2 text-xs text-surface-600"><CalendarDays className="h-4 w-4" />{nextFixture.isHome ? "Home venue" : "Travel fixture"}</span></div></div></Card></motion.div>}
 
-      <div className="px-4 py-4 space-y-4">
-        {/* Auracle AI Assistant */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="flex items-start gap-3 bg-gradient-to-br from-surface-100 to-surface-200/60">
-            <div className="w-9 h-9 rounded-xl bg-pitch-500/15 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 text-pitch-400" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-pitch-400 mb-0.5">Auracle AI</p>
-              <p className="text-xs text-surface-400 leading-relaxed">
-                {training.focusTitle} is this week's training focus. Your squad's overall fitness sits at {training.teamFitnessPct}% —
-                consider rotating {training.squadStatus.filter((s) => s.fatigue === "High").length} fatigued players before {nextFixture?.opponent ?? "the next match"}.
-              </p>
-            </div>
-          </Card>
-        </motion.div>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .08 }} className="lg:col-span-4"><Card className="h-full p-5"><div className="flex items-center justify-between"><div><p className="eyebrow">Today&apos;s schedule</p><p className="mt-1 text-xs text-surface-600">{training.weekLabel}</p></div><button onClick={() => router.push("/more/calendar")} className="text-xs font-semibold text-accent-lime">See all</button></div><div className="mt-5 space-y-2">{training.weeklyPlan.slice(0, 4).map((item, index) => <button key={`${item.date}-${item.type}`} onClick={() => router.push("/more/training")} className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition hover:border-surface-500 ${index === 0 ? "border-accent-lime/50 bg-accent-lime/5" : "border-surface-400 bg-surface-100"}`}><Clock3 className="h-4 w-4 shrink-0 text-accent-lime" /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-surface-950">{item.type}</span><span className="mt-1 block truncate text-[11px] text-surface-600">{item.sub}</span></span><span className="text-[11px] text-surface-600">{item.date}</span></button>)}</div></Card></motion.div>
 
-        {/* Next Match */}
-        {nextFixture && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card glow className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-pitch-500/10 to-transparent" />
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-3">
-                  <Calendar className="w-4 h-4 text-pitch-400" />
-                  <span className="text-xs font-semibold text-pitch-400 uppercase tracking-wider">Next Match</span>
-                </div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-center">
-                    <div className="w-12 h-12 rounded-xl bg-pitch-500/20 mx-auto mb-2 flex items-center justify-center text-lg font-bold text-pitch-400">MUN</div>
-                    <span className="text-xs text-surface-400">Man Utd</span>
-                  </div>
-                  <div className="text-center px-4">
-                    <div className="text-xs text-surface-500 mb-1">{nextFixture.date}, {nextFixture.time}</div>
-                    <div className="text-xl font-bold text-surface-300">VS</div>
-                    <div className="text-xs text-surface-600 mt-1">{nextFixture.isHome ? "Old Trafford" : "Away"}</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-12 h-12 rounded-xl bg-surface-200 mx-auto mb-2 flex items-center justify-center text-lg font-bold">
-                      {nextFixture.opponent.split(" ").map((w) => w[0]).join("").slice(0, 3).toUpperCase()}
-                    </div>
-                    <span className="text-xs text-surface-400">{nextFixture.opponent}</span>
-                  </div>
-                </div>
-                <Button fullWidth onClick={() => router.push("/match/prep")}>Prepare Match</Button>
-              </div>
-            </Card>
-          </motion.div>
-        )}
+    <div className="grid gap-4 sm:grid-cols-3 lg:col-span-12"><Card className="p-5"><div className="flex items-center justify-between"><span className="text-xs uppercase tracking-wider text-surface-600">Board confidence</span><ShieldCheck className="h-4 w-4 text-accent-lime" /></div><p className="mt-4 text-3xl font-bold text-accent-lime">{club.boardConfidence}</p><p className="mt-1 text-xs text-surface-600">{club.boardConfidence >= 80 ? "Very high" : "Needs attention"}</p></Card><Card className="p-5"><div className="flex items-center justify-between"><span className="text-xs uppercase tracking-wider text-surface-600">Squad morale</span><Activity className="h-4 w-4 text-accent-lime" /></div><p className="mt-4 text-3xl font-bold text-accent-lime">{club.squadMorale}</p><p className="mt-1 text-xs text-surface-600">{club.squadMorale >= 80 ? "High" : "Monitor"}</p></Card><Card className="p-5"><div className="flex items-center justify-between"><span className="text-xs uppercase tracking-wider text-surface-600">Financial health</span><WalletCards className="h-4 w-4 text-accent-purple" /></div><p className="mt-4 text-3xl font-bold text-surface-950">£{(club.finances.balance / 1_000_000).toFixed(0)}M</p><p className="mt-1 text-xs text-surface-600">Transfer balance</p></Card></div>
 
-        {/* Club Status */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <div className="grid grid-cols-3 gap-3">
-            <Card padding="sm" interactive className="text-center" onClick={() => router.push("/more/club")}>
-              <div className="text-2xl font-bold text-pitch-400">{club.boardConfidence}</div>
-              <div className="text-2xs text-surface-600 uppercase tracking-wider mt-1">Board</div>
-            </Card>
-            <Card padding="sm" className="text-center">
-              <div className="text-2xl font-bold text-pitch-400">{club.squadMorale}</div>
-              <div className="text-2xs text-surface-600 uppercase tracking-wider mt-1">Morale</div>
-            </Card>
-            <Card padding="sm" className="text-center">
-              <div className="text-2xl font-bold text-pitch-400">£{(club.finances.balance / 1_000_000).toFixed(0)}M</div>
-              <div className="text-2xs text-surface-600 uppercase tracking-wider mt-1">Balance</div>
-            </Card>
-          </div>
-        </motion.div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-7"><Card className="h-full p-5"><div className="mb-4 flex items-center justify-between"><div><p className="eyebrow">League table</p><p className="mt-1 text-xs text-surface-600">Current competition snapshot</p></div><Badge variant="lime">Top 5</Badge></div><div className="space-y-1">{table.map((row) => <div key={row.club} className={`flex items-center justify-between rounded-xl px-3 py-3 ${row.highlight ? "border border-accent-lime/40 bg-accent-lime/5" : "border border-transparent"}`}><div className="flex items-center gap-3"><span className="w-4 text-xs text-surface-600">{row.position}</span><span className={`text-sm font-semibold ${row.highlight ? "text-accent-lime" : "text-surface-950"}`}>{row.club}</span></div><div className="flex items-center gap-5 text-xs text-surface-600"><span>{row.played}</span><span>{row.gd > 0 ? "+" : ""}{row.gd}</span><strong className="text-surface-950">{row.points}</strong></div></div>)}</div><button onClick={() => router.push("/more/competitions")} className="mt-4 flex w-full items-center justify-between border-t border-surface-400 pt-4 text-sm font-semibold text-surface-800">Full table <ChevronRight className="h-4 w-4 text-accent-lime" /></button></Card></motion.div>
 
-        {/* League Table */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card interactive onClick={() => router.push("/more/competitions")}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-surface-300">Premier League</h3>
-              <Badge variant="lime">Top 5</Badge>
-            </div>
-            <div className="space-y-2">
-              {table.map((row) => (
-                <div
-                  key={row.club}
-                  className={`flex items-center justify-between py-2 px-3 rounded-xl ${
-                    row.highlight ? "bg-pitch-500/10 border border-pitch-500/20" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-bold w-4 ${row.highlight ? "text-pitch-400" : "text-surface-500"}`}>
-                      {row.position}
-                    </span>
-                    <span className={`text-sm font-medium ${row.highlight ? "text-pitch-400" : "text-surface-300"}`}>
-                      {row.club}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-surface-500">
-                    <span>{row.played}</span>
-                    <span className="w-8 text-right">{row.gd > 0 ? "+" : ""}{row.gd}</span>
-                    <span className="w-8 text-right font-bold text-surface-300">{row.points}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Recent Form */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-surface-300">Recent Form</h3>
-              <div className="flex gap-1">
-                {club.recentForm.map((r, i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
-                      r.result === "W" ? "bg-pitch-500/20 text-pitch-400" : r.result === "D" ? "bg-surface-200 text-surface-500" : "bg-accent-red/20 text-accent-red"
-                    }`}
-                  >
-                    {r.result}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-    </div>
-  );
+    <div className="grid gap-4 lg:col-span-5"><Card className="p-5"><div className="flex items-center justify-between"><p className="eyebrow">Recent form</p><span className="text-xs text-surface-600">Last 5</span></div><div className="mt-5 flex gap-2">{club.recentForm.map((result, index) => <div key={`${result.opponent}-${index}`} className={`flex h-11 flex-1 items-center justify-center rounded-xl text-sm font-bold ${result.result === "W" ? "bg-accent-lime/20 text-accent-lime" : result.result === "D" ? "bg-surface-300 text-surface-800" : "bg-accent-red/20 text-accent-red"}`}>{result.result}</div>)}</div></Card><Card className="p-5"><div className="flex items-center justify-between"><p className="eyebrow">Latest news</p><button onClick={() => router.push("/more/inbox")} className="text-xs font-semibold text-accent-lime">All news</button></div><div className="mt-4 space-y-3">{news.length ? news.map((item) => <button key={item.id} onClick={() => router.push("/more/inbox")} className="flex w-full items-center gap-3 text-left"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-300 text-xs font-bold text-accent-lime">{item.title.slice(0, 1)}</div><span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-surface-950">{item.title}</span><span className="mt-1 block text-[11px] text-surface-600">{item.timeAgo}</span></span><ChevronRight className="h-4 w-4 text-surface-600" /></button>) : <p className="text-sm text-surface-600">No club news is available.</p>}</div></Card></div>
+  </div></div>;
 }
