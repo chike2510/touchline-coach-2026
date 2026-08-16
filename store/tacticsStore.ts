@@ -1,11 +1,12 @@
 "use client";
 
 import { create } from "zustand";
-import { tacticsService } from "@/services";
-import type { FormationSlot, TacticPreset } from "@/types";
+import type { FormationSlot, Player, TacticPreset } from "@/types";
+import { buildSlots, createTacticDraft } from "@/lib/tactics/formations";
 
 interface TacticsStore {
   presets: TacticPreset[];
+  squad: Player[];
   activePresetId: string;
   slots: FormationSlot[];
   selectedSlotId: string | null;
@@ -24,13 +25,16 @@ interface TacticsStore {
   setTeamFluidity: (fluidity: TacticPreset["teamFluidity"]) => void;
   setFreedom: (freedom: TacticPreset["freedom"]) => void;
   updateInstruction: (group: keyof TacticPreset["instructions"], index: number, value: string) => void;
+  setFormation: (formation: string) => void;
+  hydrateTactic: (tactic: TacticPreset, squad?: Player[]) => void;
 }
 
-const presets = tacticsService.getTacticPresets();
-const initialActive = presets.find((p) => p.isActive) ?? presets[0];
+const initialActive = createTacticDraft([]);
+const presets = [initialActive];
 
 export const useTacticsStore = create<TacticsStore>((set, get) => ({
   presets,
+  squad: [],
   activePresetId: initialActive.id,
   slots: initialActive.slots.map((s) => ({ ...s })),
   selectedSlotId: null,
@@ -80,4 +84,6 @@ export const useTacticsStore = create<TacticsStore>((set, get) => ({
   setTeamFluidity: (teamFluidity) => set((state) => ({ presets: state.presets.map((p) => p.id === state.activePresetId ? { ...p, teamFluidity } : p) })),
   setFreedom: (freedom) => set((state) => ({ presets: state.presets.map((p) => p.id === state.activePresetId ? { ...p, freedom } : p) })),
   updateInstruction: (group, index, value) => set((state) => ({ presets: state.presets.map((p) => p.id !== state.activePresetId ? p : { ...p, instructions: { ...p.instructions, [group]: p.instructions[group].map((instruction, instructionIndex) => instructionIndex === index ? value : instruction) } }) })),
+  setFormation: (formation) => set((state) => { const slots = buildSlots(formation, state.squad, state.slots); return { presets: state.presets.map((p) => p.id === state.activePresetId ? { ...p, formation, slots } : p), slots }; }),
+  hydrateTactic: (tactic, squad = []) => set({ presets: [tactic], squad, activePresetId: tactic.id, slots: tactic.slots.map((slot) => ({ ...slot })) }),
 }));

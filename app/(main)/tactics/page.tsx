@@ -9,13 +9,13 @@ import { PlayerToken } from "@/features/tactics/PlayerToken";
 import { RoleEditorSheet } from "@/features/tactics/RoleEditorSheet";
 import { InstructionRow } from "@/features/tactics/InstructionRow";
 import { PrincipleSlider } from "@/features/tactics/PrincipleSlider";
-import { TacticPresetPill } from "@/features/tactics/TacticPresetPill";
 import { useTacticsStore, useAppStore } from "@/store";
+import { formationCatalog } from "@/lib/tactics/formations";
 import { playerService } from "@/services";
 import { motion } from "framer-motion";
 import { FlaskConical, Save, Move } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function TacticsPage() {
   const router = useRouter();
@@ -23,11 +23,13 @@ export default function TacticsPage() {
   const {
     presets, activePresetId, slots, selectedSlotId, setActivePreset,
     selectSlot, moveSlot, setSlotRole, setSlotDuty, resetActivePreset, saveActivePreset,
-    setPrincipleScale, updateSetting, setMentality, setTeamFluidity, setFreedom, updateInstruction,
+    setPrincipleScale, updateSetting, setMentality, setTeamFluidity, setFreedom, updateInstruction, setFormation, hydrateTactic,
   } = useTacticsStore();
   const showToast = useAppStore((s) => s.showToast);
 
   const [editMode, setEditMode] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(true);
+  useEffect(() => { let active = true; Promise.all([fetch("/api/tactics", { cache: "no-store" }).then((response) => response.json()), fetch("/api/squad", { cache: "no-store" }).then((response) => response.json())]).then(([tacticPayload, squadPayload]) => { if (active && tacticPayload.tactic) hydrateTactic(tacticPayload.tactic, squadPayload.players ?? []); }).catch(() => undefined).finally(() => { if (active) setIsHydrating(false); }); return () => { active = false; }; }, [hydrateTactic]);
   const activePreset = presets.find((p) => p.id === activePresetId) ?? presets[0];
   const selectedSlot = slots.find((s) => s.id === selectedSlotId);
   const selectedPlayer = selectedSlot ? playerService.getPlayerById(selectedSlot.playerId) : undefined;
@@ -86,15 +88,11 @@ export default function TacticsPage() {
           </button>
         </div>
 
-        {/* Preset picker */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-          {presets.map((preset) => (
-            <TacticPresetPill key={preset.id} preset={preset} active={preset.id === activePresetId} onClick={() => setActivePreset(preset.id)} />
-          ))}
-        </div>
+        {/* Dynamic formation selector */}
+        <div className="grid grid-cols-3 gap-2">{formationCatalog.map((formation) => <button key={formation.id} onClick={() => setFormation(formation.id)} className={`rounded-xl border px-3 py-2 text-left transition ${activePreset.formation === formation.id ? "border-accent-lime/60 bg-accent-lime/10" : "border-surface-400 bg-surface-100 hover:border-surface-500"}`}><span className={`block text-xs font-bold ${activePreset.formation === formation.id ? "text-accent-lime" : "text-surface-950"}`}>{formation.label}</span><span className="mt-1 block text-[10px] leading-tight text-surface-600">{formation.description}</span></button>)}</div>
 
         {/* Formation pitch */}
-        <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
+        {isHydrating ? <div className="shimmer aspect-[4/5] rounded-2xl" /> : <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
           <Card padding="none" className="relative aspect-[4/5] bg-gradient-to-b from-emerald-950/40 to-emerald-950/20 overflow-hidden">
             <div ref={containerRef} className="absolute inset-0">
               <PitchMarkings />
@@ -112,7 +110,7 @@ export default function TacticsPage() {
               ))}
             </div>
           </Card>
-        </motion.div>
+        </motion.div>}
         {editMode && (
           <p className="text-2xs text-surface-600 text-center -mt-2">Drag players to reposition · Tap a player to edit role &amp; duty</p>
         )}

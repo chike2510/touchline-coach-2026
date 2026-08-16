@@ -1,4 +1,5 @@
-import { clubService, playerService, tacticsService } from "@/services";
+import { clubService, playerService } from "@/services";
+import { createTacticDraft } from "@/lib/tactics/formations";
 import type { Player, TacticPreset } from "@/types";
 
 export type CareerProfile = {
@@ -20,9 +21,9 @@ type AppState = {
 const globalState = globalThis as typeof globalThis & { __touchlineState?: AppState };
 
 export function getAppState(): AppState {
-  if (!globalState.__touchlineState) globalState.__touchlineState = { career: null, tactic: tacticsService.getActiveTactic(), squad: playerService.getSquad() };
+  if (!globalState.__touchlineState) { const squad = playerService.getSquad(); globalState.__touchlineState = { career: null, tactic: createTacticDraft(squad), squad }; }
   if (!Array.isArray(globalState.__touchlineState.squad)) globalState.__touchlineState.squad = playerService.getSquad();
-  if (!globalState.__touchlineState.tactic) globalState.__touchlineState.tactic = tacticsService.getActiveTactic();
+  if (!globalState.__touchlineState.tactic || globalState.__touchlineState.tactic.id !== "career-tactic") globalState.__touchlineState.tactic = createTacticDraft(globalState.__touchlineState.squad);
   return globalState.__touchlineState;
 }
 
