@@ -1,1 +1,1 @@
-import { TacticsPage } from "@/components/manager-pages"; export default TacticsPage;
+import { DeepTactics } from "@/components/tactics-match"; export default DeepTactics;

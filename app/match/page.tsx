@@ -1,1 +1,1 @@
-import { MatchPage } from "@/components/manager-pages"; export default MatchPage;
+import { DeepMatch } from "@/components/tactics-match"; export default DeepMatch;
