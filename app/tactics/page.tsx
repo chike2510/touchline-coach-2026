@@ -1,1 +1,1 @@
-import { DeepTactics } from "@/components/tactics-match"; export default DeepTactics;
+import AdvancedTactics from "@/components/advanced-tactics"; export default AdvancedTactics;
