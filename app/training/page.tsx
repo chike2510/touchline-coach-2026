@@ -1,1 +1,2 @@
-import { TrainingPage } from "@/components/manager-pages"; export default TrainingPage;
+import TrainingWorkstation from "@/components/training-workstation";
+export default function Page(){return <TrainingWorkstation/>}

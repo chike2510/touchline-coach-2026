@@ -1,1 +1,2 @@
-import AdvancedTactics from "@/components/advanced-tactics"; export default AdvancedTactics;
+import TacticalWorkstation from "@/components/tactical-workstation";
+export default function Page(){return <TacticalWorkstation/>}

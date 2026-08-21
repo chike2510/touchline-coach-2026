@@ -1,2 +1,2 @@
-import { MedicalPage } from "@/components/department-pages";
-export default function Page(){return <MedicalPage/>}
+import MedicalWorkstation from "@/components/medical-workstation";
+export default function Page(){return <MedicalWorkstation/>}
