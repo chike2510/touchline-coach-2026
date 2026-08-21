@@ -1,1 +1,2 @@
-import { StaffPage } from "@/components/manager-pages"; export default StaffPage;
+import DepartmentWorkstation from "@/components/department-workstation";
+export default function Page(){return <DepartmentWorkstation kind="staff"/>}

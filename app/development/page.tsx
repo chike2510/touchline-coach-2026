@@ -1,2 +1,2 @@
-import { DevelopmentPage } from "@/components/department-pages";
-export default function Page(){return <DevelopmentPage/>}
+import DepartmentWorkstation from "@/components/department-workstation";
+export default function Page(){return <DepartmentWorkstation kind="development"/>}

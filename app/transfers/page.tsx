@@ -1,1 +1,2 @@
-import { TransfersPage } from "@/components/manager-pages"; export default TransfersPage;
+import DepartmentWorkstation from "@/components/department-workstation";
+export default function Page(){return <DepartmentWorkstation kind="transfers"/>}

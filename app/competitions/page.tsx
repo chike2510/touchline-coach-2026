@@ -1,2 +1,2 @@
-import { CompetitionsPage } from "@/components/department-pages";
-export default function Page(){return <CompetitionsPage/>}
+import DepartmentWorkstation from "@/components/department-workstation";
+export default function Page(){return <DepartmentWorkstation kind="competitions"/>}

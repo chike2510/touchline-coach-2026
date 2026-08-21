@@ -1,1 +1,2 @@
-import { ClubPage } from "@/components/manager-pages"; export default ClubPage;
+import DepartmentWorkstation from "@/components/department-workstation";
+export default function Page(){return <DepartmentWorkstation kind="club"/>}

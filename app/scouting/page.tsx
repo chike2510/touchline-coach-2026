@@ -1,2 +1,2 @@
-import { ScoutingPage } from "@/components/department-pages";
-export default function Page(){return <ScoutingPage/>}
+import DepartmentWorkstation from "@/components/department-workstation";
+export default function Page(){return <DepartmentWorkstation kind="scouting"/>}

@@ -1,1 +1,2 @@
-import { CalendarPage } from "@/components/manager-pages"; export default CalendarPage;
+import DepartmentWorkstation from "@/components/department-workstation";
+export default function Page(){return <DepartmentWorkstation kind="schedule"/>}
