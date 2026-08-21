@@ -1,1 +1,2 @@
-import { SquadPage } from "@/components/manager-pages"; export default SquadPage;
+import SquadWorkspace from "@/components/squad-workspace";
+export default function Page(){return <SquadWorkspace/>}
