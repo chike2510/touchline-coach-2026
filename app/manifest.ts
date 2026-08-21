@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function manifest(): MetadataRoute.Manifest { return { name:"Touchline 26 · Riverside Athletic", short_name:"Touchline 26", description:"A landscape-first football management workstation.", start_url:"/", display:"standalone", background_color:"#07090c", theme_color:"#07090c", orientation:"landscape", icons:[{src:"/icon",sizes:"any",type:"image/svg+xml"}]}; }
